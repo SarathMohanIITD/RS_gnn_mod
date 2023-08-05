@@ -68,28 +68,49 @@ print(args)
 # we need to set the random seed to be the same as that when you generate the perturbed graph
 # but now change the setting from nettack to prognn which directly loads the prognn splits
 # data = Dataset(root='/tmp/', name=args.dataset, setting='nettack', seed=15)
-data = Dataset(root='/tmp/', name=args.dataset,setting='prognn')
-adj, features, labels = data.adj, data.features, data.labels
-idx_train, idx_val, idx_test = data.idx_train, data.idx_val, data.idx_test
 
-if args.dataset == 'pubmed':
-    # just for matching the results in the paper, see details in https://github.com/ChandlerBang/Pro-GNN/issues/2
-    #print("just for matching the results in the paper," + \
-    #      "see details in https://github.com/ChandlerBang/Pro-GNN/issues/2")
-    idx_train, idx_val, idx_test = get_train_val_test(adj.shape[0],
-            val_size=0.1, test_size=0.8, stratify=encode_onehot(labels), seed=15)
 
-if args.attack == 'no':
+dataset=args.dataset
+if dataset in ['chameleon', 'squirrel']:
+    with open(f'data/{dataset}_data.pickle', 'rb') as handle:
+        data = pickle.load(handle)
+    features = data["features"]
+    labels = data["labels"]
+    idx_train = data["idx_train"]
+    idx_val = data["idx_val"]
+    idx_test = data["idx_test"]
+    if  args.attack in ['meta','nettack']:
+        adj = load_npz(f'data/{dataset}_perturbed_{args.ptb_rate}.npz')
+    else:
+        adj = load_npz(f'data/{dataset}.npz')
+    if args.attack == 'nettack':
+        idx_test = np.load(f"data/{dataset}_idx_test.npy")
     perturbed_adj = adj
 
-if args.attack == 'meta' or args.attack == 'nettack':
-    perturbed_data = PrePtbDataset(root='/tmp/',
-            name=args.dataset,
-            attack_method=args.attack,
-            ptb_rate=args.ptb_rate)
-    perturbed_adj = perturbed_data.adj
-    if args.attack == 'nettack':
-        idx_test = perturbed_data.target_nodes
+else : 
+
+    data = Dataset(root='/tmp/', name=args.dataset,setting='prognn')
+    adj, features, labels = data.adj, data.features, data.labels
+    idx_train, idx_val, idx_test = data.idx_train, data.idx_val, data.idx_test
+
+    if args.dataset == 'pubmed':
+        # just for matching the results in the paper, see details in https://github.com/ChandlerBang/Pro-GNN/issues/2
+        #print("just for matching the results in the paper," + \
+        #      "see details in https://github.com/ChandlerBang/Pro-GNN/issues/2")
+        idx_train, idx_val, idx_test = get_train_val_test(adj.shape[0],
+                val_size=0.1, test_size=0.8, stratify=encode_onehot(labels), seed=15)
+
+    if args.attack == 'no':
+        perturbed_adj = adj
+
+    if args.attack == 'meta' or args.attack == 'nettack':
+        perturbed_data = PrePtbDataset(root='/tmp/',
+                name=args.dataset,
+                attack_method=args.attack,
+                ptb_rate=args.ptb_rate)
+        perturbed_adj = perturbed_data.adj
+        if args.attack == 'nettack':
+            idx_test = perturbed_data.target_nodes
 
 np.random.seed(args.seed)
 torch.manual_seed(args.seed)
