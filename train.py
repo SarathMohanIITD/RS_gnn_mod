@@ -36,7 +36,7 @@ parser.add_argument('--hidden', type=int, default=16,
 parser.add_argument('--dropout', type=float, default=0.5,
                     help='Dropout rate (1 - keep probability).')
 parser.add_argument('--dataset', type=str, default='cora',
-        choices=['cora', 'citeseer', 'cora_ml', 'polblogs','pubmed', 'acm', 'blogcatalog', 'uai', 'flickr'], help='dataset')
+        choices=['cora', 'citeseer', 'cora_ml', 'polblogs','pubmed', 'acm', 'blogcatalog', 'uai', 'flickr','chameleon', 'squirrel'], help='dataset')
 parser.add_argument('--attack', type=str, default='meta',
         choices=['no', 'meta', 'nettack'])
 parser.add_argument('--ptb_rate', type=float, default=0.05, help="noise ptb_rate")
